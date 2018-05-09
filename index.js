@@ -93,7 +93,6 @@ class Prune {
     this.serverless.cli.log('Prune: Querying for deployed versions');
 
     return BbPromise.mapSeries(functionNames, functionName => {
-
       return BbPromise.join(
         this.listVersionForFunction(functionName),
         this.listAliasesForFunction(functionName),
@@ -112,7 +111,7 @@ class Prune {
       const nonLatestVersionCount = functionResult.versions.length - 1;
       const aliasCount = functionResult.aliases.length;
       this.serverless.cli.log(`Prune: ${functionResult.name} has ${puralized(nonLatestVersionCount, 'additional version', 'additional versions')} published and ${puralized(aliasCount, 'alias', 'aliases')}, ${puralized(deletionVersions.length, 'version', 'versions')} selected for deletion`);
-  
+
       if (this.options.dryRun) {
         return BbPromise.resolve();
       } else {
@@ -126,16 +125,14 @@ class Prune {
   }
 
   deleteVersionsForFunction(functionName, versions) {
-    
-    return BbPromise.each(versions, version => {
-      
+    return BbPromise.reduce(versions, (_, version) => {
       this.serverless.cli.log(`Prune: Deleting ${functionName} v${version}...`);
 
       const params = {
-        FunctionName: functionName, 
+        FunctionName: functionName,
         Qualifier: version
       };
-      
+
       return BbPromise.resolve()
         .then(() => this.provider.request('Lambda', 'deleteFunction', params))
         .catch(e => {
@@ -173,7 +170,6 @@ class Prune {
   }
 
   makeLambdaRequest(action, params, responseMapping) {
-    
     const results = [];
     const responseHandler = response => {
 
